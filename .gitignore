@@ -1,2 +1,8 @@
+# test program
 test*.py
+
+# personal files
 nabe1005-room-monitor-firebase-adminsdk-t2ykf-8532a3d274.json
+
+# Other
+.DS_Store
