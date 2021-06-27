@@ -1,0 +1,8 @@
+[Unit]
+Description=room_monitor program
+
+[Service]
+ExecStart=/home/pi/.pyenv/shims/python /home/pi/room_monitor/upload.py
+
+[Install]
+WantedBy=multi-user.target
