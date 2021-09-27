@@ -1,7 +1,4 @@
-#coding: utf-8
-
 from smbus import SMBus
-import time
 
 i2c_address = 0x76
 bus_number = 1
@@ -10,12 +7,30 @@ bus = SMBus(bus_number)
 digT = []
 digP = []
 digH = []
-
 t_fine = 0.0
 
+def main():
+    setup()
+    get_calib_param()
+    result = readData()
+    print(result)
+    return result
 
-def writeReg(reg_address, data):
-    bus.write_byte_data(i2c_address, reg_address, data)
+
+def readData():
+    data = []
+    global hum_result
+    for i in range(0xF7, 0xF7+8):
+        data.append(bus.read_byte_data(i2c_address, i))
+    pres_raw = (data[0] << 12) | (data[1] << 4) | (data[2] >> 4)
+    temp_raw = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4)
+    hum_raw = (data[6] << 8) | data[7]
+
+    temp_result = compensate_T(temp_raw)
+    hum_result = compensate_H(hum_raw)
+    press_result = compensate_P(pres_raw)
+
+    return {'temp': temp_result, 'hum': hum_result, 'press': press_result}
 
 
 def get_calib_param():
@@ -124,6 +139,10 @@ def setup():
     config_reg = (t_sb << 5) | (filter << 2) | spi3w_en
     ctrl_hum_reg = osrs_h
 
-    writeReg(0xF2, ctrl_hum_reg)
-    writeReg(0xF4, ctrl_meas_reg)
-    writeReg(0xF5, config_reg)
+    bus.write_byte_data(i2c_address, 0xF2, ctrl_hum_reg)
+    bus.write_byte_data(i2c_address, 0xF4, ctrl_meas_reg)
+    bus.write_byte_data(i2c_address, 0xF5, config_reg)
+
+
+if __name__ == '__main__':
+    main()
